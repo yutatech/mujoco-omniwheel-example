@@ -1,0 +1,8 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+./setup/setup_build_system.sh
+
+cmake -S . -G Ninja -B $SCRIPT_DIR/.build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+cmake --build $SCRIPT_DIR/.build --parallel 

@@ -1,0 +1,14 @@
+<mujoco>
+  <geom type="cylinder" size="0.023 0.004" rgba="0.5 0.5 0.5 1" />
+  <replicate count="2" offset="0 0 0.006" euler="0 0 22.5">
+    <replicate count="8" offset="0 0 0" euler="0 0 45">
+      <body>
+        <body pos="0 0.02625 -0.003">
+          <!-- Side wheel -->
+          <geom type="ellipsoid" size="0.01075 0.00325 0.00325" rgba="0.5 0.5 0.5 1" />
+          <joint type="hinge" pos="0 0 0" axis="1 0 0" />
+        </body>
+      </body>
+    </replicate>
+  </replicate>
+</mujoco>

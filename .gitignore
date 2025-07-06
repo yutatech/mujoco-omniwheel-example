@@ -1,0 +1,4 @@
+MUJOCO_LOG.TXT
+mujoco.framework
+.build
+.vscode

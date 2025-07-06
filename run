@@ -1,0 +1,16 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+EXE_PATH="$SCRIPT_DIR/.build/mujoco-omniwheel-example" # 実行ファイルのパスを指定
+RPATH_TO_ADD="$SCRIPT_DIR" # mujoco.frameworkのパスを指定
+
+# 既存のrpath一覧を取得
+existing_rpaths=$(otool -l "$EXE_PATH" | grep -A2 LC_RPATH | grep path | awk '{print $2}')
+
+# rpathが存在するか判定
+if ! echo "$existing_rpaths" | grep -qx "$RPATH_TO_ADD"; then
+  install_name_tool -add_rpath "$RPATH_TO_ADD" "$EXE_PATH"
+fi
+
+$EXE_PATH $SCRIPT_DIR/model/robot.xml

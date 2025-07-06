@@ -1,0 +1,74 @@
+<mujoco model="omni4_robot">
+  <compiler angle="degree" coordinate="local" />
+  <option timestep="0.01" />
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3"
+      rgb2=".2 .3 .4" />
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2" />
+  </asset>
+
+  <worldbody>
+    <!-- 地面 -->
+    <geom name="ground" type="plane" size="3 3 0.01" material="grid" />
+
+    <!-- 全体を照らすライト -->
+    <light name="top light" pos="0 0 2" mode="trackcom" diffuse=".4 .4 .4" />
+
+    <!-- 本体 -->
+    <body name="base" pos="0 0 0.04">
+      <freejoint />
+
+      <inertial pos="0 0 0" mass="2" diaginertia="0.01 0.01 0.01" />
+      
+      <!-- 頭 -->
+      <body pos="0 0 0.05">
+        <geom type="cylinder" size="0.09 0.04" rgba="0.3 0.3 1 1" />
+      </body>
+
+      <!-- wheel0 -->
+      <body euler="0 0 -60">
+        <body name="wheel0" pos="0.08 0 -0.03" euler="0 90 0">
+          <joint name="joint0" type="hinge" axis="0 0 1" />
+          <inertial pos="0 0 0" mass="0.05" diaginertia="0.01 0.01 0.01" />
+          <include file="wheel/assy-1.xml" />
+        </body>
+      </body>
+
+      <!-- wheel1 -->
+      <body euler="0 0 -135">
+        <body name="wheel1" pos="0.08 0 -0.03" euler="0 90 0">
+          <joint name="joint1" type="hinge" axis="0 0 1" />
+          <inertial pos="0 0 0" mass="0.05" diaginertia="0.01 0.01 0.01" />
+          <include file="wheel/assy-2.xml" />
+        </body>
+      </body>
+
+      <!-- wheel2 -->
+      <body euler="0 0 -225">
+        <body name="wheel2" pos="0.08 0 -0.03" euler="0 90 0">
+          <joint name="joint2" type="hinge" axis="0 0 1" />
+          <inertial pos="0 0 0" mass="0.05" diaginertia="0.01 0.01 0.01" />
+          <include file="wheel/assy-3.xml" />
+        </body>
+      </body>
+
+      <!-- wheel3 -->
+      <body euler="0 0 -300">
+        <body name="wheel3" pos="0.08 0 -0.03" euler="0 90 0">
+          <joint name="joint3" type="hinge" axis="0 0 1" />
+          <inertial pos="0 0 0" mass="0.05" diaginertia="0.01 0.01 0.01" />
+          <include file="wheel/assy-4.xml" />
+        </body>
+      </body>
+
+    </body>
+  </worldbody>
+
+  <actuator>
+    <velocity joint="joint0" ctrlrange="-20 20" kv="1" />
+    <velocity joint="joint1" ctrlrange="-20 20" kv="1" />
+    <velocity joint="joint2" ctrlrange="-20 20" kv="1" />
+    <velocity joint="joint3" ctrlrange="-20 20" kv="1" />
+  </actuator>
+</mujoco>
