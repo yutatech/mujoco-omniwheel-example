@@ -26,49 +26,47 @@ download_latest_mujoco() {
 # UbuntuとmacOSで場合分け
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   mujoco_dir="$REPO_DIR/mujoco"
-  # mujocoディレクトリが存在する場合は正常終了
+  # mujocoディレクトリが存在する場合はスキップ
   if [ -d "$mujoco_dir" ]; then
     echo "MuJoCo already downloaded: $mujoco_dir"
-    exit 0
-  fi
-
-  arch=$(uname -m)
-  if [ "$arch" = "x86_64" ]; then
-    download_latest_mujoco "linux-x86_64.tar.gz" "$REPO_DIR/mujoco.tar.gz"
-  elif [ "$arch" = "aarch64" ]; then
-    download_latest_mujoco "linux-aarch64.tar.gz" "$REPO_DIR/mujoco.tar.gz"
   else
-    echo "Unsupported architecture: $arch"
-    exit 1
+    arch=$(uname -m)
+    if [ "$arch" = "x86_64" ]; then
+      download_latest_mujoco "linux-x86_64.tar.gz" "$REPO_DIR/mujoco.tar.gz"
+    elif [ "$arch" = "aarch64" ]; then
+      download_latest_mujoco "linux-aarch64.tar.gz" "$REPO_DIR/mujoco.tar.gz"
+    else
+      echo "Unsupported architecture: $arch"
+      exit 1
+    fi
+    # .tar.gzを解凍
+    echo "Extracting MuJoCo to: $mujoco_dir"
+    tar -xzf $REPO_DIR/mujoco.tar.gz
+    mv mujoco*/ "$mujoco_dir/"
+    # .tar.gzファイルを削除
+    echo "Removing downloaded tar.gz file."
+    rm $REPO_DIR/mujoco.tar.gz
   fi
-  # .tar.gzを解凍
-  echo "Extracting MuJoCo to: $mujoco_dir"
-  tar -xzf $REPO_DIR/mujoco.tar.gz -C "$mujoco_dir"
-  # .tar.gzファイルを削除
-  echo "Removing downloaded tar.gz file."
-  rm $REPO_DIR/mujoco.tar.gz
-
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   mujoco_dir="$REPO_DIR/mujoco.framework"
-  # mujoco.frameworkディレクトリが存在する場合は正常終了
+  # mujoco.frameworkディレクトリが存在する場合はスキップ
   if [ -d "$mujoco_dir" ]; then
     echo "MuJoCo already downloaded: $mujoco_dir"
-    exit 0
+  else
+    download_latest_mujoco "macos-universal2.dmg" "$REPO_DIR/mujoco.dmg"
+    # .dmgをマウントして中身をコピー
+    echo "Mounting MuJoCo DMG and copying to: $mujoco_dir"
+    mount_point="/Volumes/MuJoCo"
+    hdiutil attach "$REPO_DIR/mujoco.dmg" -mountpoint "$mount_point" -nobrowse -quiet
+    echo "Copying MuJoCo framework to: $mujoco_dir"
+    cp -r "$mount_point/mujoco.framework" "$mujoco_dir"
+    # マウントを解除
+    echo "Unmounting MuJoCo DMG."
+    hdiutil detach "$mount_point" -quiet
+    # .dmgファイルを削除
+    echo "Removing downloaded DMG file."
+    rm "$REPO_DIR/mujoco.dmg"
   fi
-
-  download_latest_mujoco "macos-universal2.dmg" "$REPO_DIR/mujoco.dmg"
-  # .dmgをマウントして中身をコピー
-  echo "Mounting MuJoCo DMG and copying to: $mujoco_dir"
-  mount_point="/Volumes/MuJoCo"
-  hdiutil attach "$REPO_DIR/mujoco.dmg" -mountpoint "$mount_point" -nobrowse -quiet
-  echo "Copying MuJoCo framework to: $mujoco_dir"
-  cp -r "$mount_point/mujoco.framework" "$mujoco_dir"
-  # マウントを解除
-  echo "Unmounting MuJoCo DMG."
-  hdiutil detach "$mount_point" -quiet
-  # .dmgファイルを削除
-  echo "Removing downloaded DMG file."
-  rm "$REPO_DIR/mujoco.dmg"
 else
     echo "Unsupported OS: $OSTYPE"
     exit 1
@@ -76,8 +74,8 @@ fi
 
 
 ### Install dependencies
-APT_DEPENDENCIES=""
-BREW_DEPENDENCIES="glfw"
+APT_DEPENDENCIES="ninja-build ccache cmake libglfw3-dev libgl1-mesa-dev libglew-dev libosmesa6-dev libglvnd-dev"
+BREW_DEPENDENCIES="ninja ccache cmake glfw"
 
 if command -v brew >/dev/null 2>&1; then
     PM_CMD="brew"
@@ -88,11 +86,6 @@ elif command -v apt >/dev/null 2>&1; then
 else
     echo "Unsupported package manager. Please install dependencies manually."
     exit 1
-fi
-
-# Check if the script is run as root and not brew
-if [ "$(id -u)" -ne 0 ] && [ "$PM_CMD" != "brew" ]; then
-    PM_CMD="sudo $PM_CMD"
 fi
 
 # check if all apt dependencies are installed
@@ -106,6 +99,11 @@ for dep in $DEPENDENDIES; do
         echo "Dependency $dep is already installed."
     fi
 done
+
+# Check if the script is run as root and not brew
+if [ "$(id -u)" -ne 0 ] && [ "$PM_CMD" != "brew" ]; then
+    PM_CMD="sudo $PM_CMD"
+fi
 
 # If any apt dependencies are missing, install them
 if [ -n "$INSTALL_REQUIRED" ]; then

@@ -1,4 +1,5 @@
 MUJOCO_LOG.TXT
-mujoco.framework
-.build
-.vscode
+mujoco.framework/
+mujoco/
+.build/
+.vscode/
